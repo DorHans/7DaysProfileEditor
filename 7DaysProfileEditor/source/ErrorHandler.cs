@@ -28,7 +28,8 @@ namespace SevenDaysProfileEditor
             }
             else
             {
-                MessageBox.Show(text, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                //Just log and go on...
+                //MessageBox.Show(text, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

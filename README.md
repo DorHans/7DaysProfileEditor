@@ -1,4 +1,6 @@
 # 7DaysProfileEditor
+Download the latest release here https://github.com/Karlovsky120/7DaysProfileEditor/releases
+
 Tool for editing *.ttp files made for 7 Days To Die
 
 First of all, anyone can contribute to this project! Fork the repository, do what you want and create a pull request. If whatever you did is within reson, I'll add it as is, or with minor modifications to better fit into the project as whole. You can always ask me if you're unsure. =)
