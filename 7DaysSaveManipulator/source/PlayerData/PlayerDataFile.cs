@@ -63,6 +63,9 @@ namespace SevenDaysSaveManipulator.PlayerData {
         //food
         public LiveStats food;
 
+        //gameStageLifetimeTicks
+        public Value<ulong> gameStageLifetimeTicks;
+
         //id
         public Value<int> id;
 
@@ -129,6 +132,9 @@ namespace SevenDaysSaveManipulator.PlayerData {
         //spawnPoints
         public List<Vector3D<int>> spawnPoints;
 
+        //stealthStream
+        public MemoryStream stealthStream;
+
         //totalItemsCrafted
         public Value<uint> totalItemsCrafted;
 
@@ -183,7 +189,7 @@ namespace SevenDaysSaveManipulator.PlayerData {
 
                 //Adding version checks to the segments. This will make the app blowup
                 //where an unknown version has been introduced.
-                if (saveFileVersion.Get() > 35) //Last known version is 35.
+                if (saveFileVersion.Get() > 36) //Last known version is 36.
                     throw new Exception("Unknown save file version! " + saveFileVersion);
 
                 ecd = new EntityCreationData();
@@ -284,6 +290,13 @@ namespace SevenDaysSaveManipulator.PlayerData {
                 distanceWalked = new Value<float>(reader.ReadSingle());
                 longestLife = new Value<float>(reader.ReadSingle());
 
+                if (saveFileVersion.Get() > 35) {
+                    gameStageLifetimeTicks = new Value<ulong>(reader.ReadUInt64());
+                }
+                else {
+                    gameStageLifetimeTicks = new Value<ulong>(0);
+                }
+
                 waypoints = new WaypointCollection();
                 waypoints.Read(reader);
 
@@ -318,6 +331,13 @@ namespace SevenDaysSaveManipulator.PlayerData {
                     trackedFriendEntityIds.Add(reader.ReadInt32());
                 }
 
+                if (saveFileVersion.Get() > 34) {
+                    memoryStreamSize = (int)reader.ReadUInt32();
+                    if (memoryStreamSize > 0)
+                        stealthStream = new MemoryStream(reader.ReadBytes(memoryStreamSize));
+                    else
+                        stealthStream = new MemoryStream();
+                }
                 reader.Close();
             }
             else {
@@ -408,6 +428,11 @@ namespace SevenDaysSaveManipulator.PlayerData {
             writer.Write(totalItemsCrafted.Get());
             writer.Write(distanceWalked.Get());
             writer.Write(longestLife.Get());
+
+            if (saveFileVersion.Get() > 35) {
+                writer.Write(gameStageLifetimeTicks.Get());
+            }
+
             waypoints.Write(writer);
             writer.Write(skillPoints.Get());
 
@@ -433,6 +458,13 @@ namespace SevenDaysSaveManipulator.PlayerData {
                 writer.Write(trackedFriendEntityIds[i]);
             }
 
+            if (saveFileVersion.Get() > 34) {
+                array = stealthStream.ToArray();
+                writer.Write((uint)array.Length);
+                if (array.Length > 0) {
+                    writer.Write(array);
+                }
+            }
             writer.Close();
         }
     }
