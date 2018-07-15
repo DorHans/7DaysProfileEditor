@@ -12,8 +12,6 @@ namespace SevenDaysProfileEditor {
         /// Initializes the static data of the program
         /// </summary>
         private static bool Initialize() {
-
-
             try {
                 AssetInfo.GenerateAssetInfoList();
                 IconData.itemIconDictionary = new Dictionary<string, byte[]>();
@@ -28,7 +26,7 @@ namespace SevenDaysProfileEditor {
                 IconData.PopulateIconDictionaries();
             }
             catch (Exception e) {
-                ErrorHandler.HandleError("Error while processing icons. Failed to load asset files." + e.Message, e, false);
+                // ErrorHandler.HandleError("Error while processing icons. Failed to load asset files." + e.Message, e, true);
             }
 
             try {
@@ -60,45 +58,49 @@ namespace SevenDaysProfileEditor {
         [STAThread]
         private static void Main() {
             Log.startLog();
-
+            
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-
-            Updater.DoUpdate();
 
             MainWindow window = new MainWindow();
             Config.Load();
 
             string gameRoot = Config.GetSetting("gameRoot");
 
-            // If no game root is specified in the config, we check if we are inside the game root. If not, we ask the user.
-            if (gameRoot == null) {
-                if (File.Exists(Environment.CurrentDirectory + "7DaysToDie.exe")) {
-                    Start(window);
-                }
-                else {
-                    OpenFileDialog gameRootDialog = new OpenFileDialog() {
-                        Title = "Tool needs to find the 7DaysToDie.exe!",
-                        Filter = "7DaysToDie.exe|7DaysToDie.exe",
-                        CheckFileExists = true
-                    };
-
-                    gameRootDialog.FileOk += (sender1, e1) => {
-                        gameRoot = gameRootDialog.FileName.Substring(0, gameRootDialog.FileName.LastIndexOf('\\'));
-                        Config.SetSetting("gameRoot", gameRoot);
-                    };
-
-                    if (gameRootDialog.ShowDialog() != DialogResult.OK) {
-                        Application.Exit();
-                        return;
-                    }
-
-                    Start(window);
-                }
-            }
-            else {
+            // If they gave a gameroot, launch app.
+            if (gameRoot != null) {
                 Start(window);
+                return;
             }
+
+            //use default location?
+            string defaultlocation = @"C:\Program Files (x86)\Steam\steamapps\common\7 Days To Die\7DaysToDie.exe";
+            if (File.Exists(defaultlocation)) {
+                gameRoot = defaultlocation.Substring(0, defaultlocation.LastIndexOf('\\'));
+                Config.SetSetting("gameRoot", gameRoot);
+                Start(window);
+                return;
+            }
+
+            //Ask user were is game
+            OpenFileDialog gameRootDialog = new OpenFileDialog() {
+                Title = "Tool needs to find the 7DaysToDie.exe!",
+                Filter = "7DaysToDie.exe|7DaysToDie.exe",
+                CheckFileExists = true
+            };
+
+            gameRootDialog.FileOk += (sender1, e1) => {
+                gameRoot = gameRootDialog.FileName.Substring(0, gameRootDialog.FileName.LastIndexOf('\\'));
+                Config.SetSetting("gameRoot", gameRoot);
+            };
+
+            if (gameRootDialog.ShowDialog() != DialogResult.OK) {
+                Application.Exit();
+                return;
+            }
+
+            Start(window);
         }
+
     }
 }
